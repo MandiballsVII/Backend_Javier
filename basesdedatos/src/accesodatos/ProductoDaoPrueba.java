@@ -22,6 +22,11 @@ public class ProductoDaoPrueba {
 		
 		System.out.println(dao.obtenerPorId(idProducto));
 		
+		System.out.println("Dime el id del producto que quieres borrar");
+		idProducto = Long.parseLong(sc.nextLine());
+		
+		dao.borrar(idProducto);
+		
 		sc.close();
 	}
 }
