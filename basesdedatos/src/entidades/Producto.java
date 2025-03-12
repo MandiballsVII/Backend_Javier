@@ -11,6 +11,10 @@ public class Producto {
 	private LocalDate caducidad;
 	private String descripcion;
 
+	public Producto() {
+		super();
+	}
+
 	public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
 		super();
 		this.id = id;

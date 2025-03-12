@@ -54,7 +54,32 @@ public class ProductoDao {
 	}
 
 	public Producto obtenerPorId(Long id) {
-		return null;
+		
+		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
+				PreparedStatement pst = con.prepareStatement(SQL_SELECT_ID);
+				){
+			
+			pst.setLong(1, id);
+			ResultSet rs = pst.executeQuery();
+			
+			Producto producto = new Producto();
+			
+			while(rs.next()) {
+				String nombre = rs.getString("nombre");
+				BigDecimal precio = rs.getBigDecimal("precio");
+				LocalDate caducidad = rs.getDate("caducidad").toLocalDate();
+				String descripcion = rs.getString("descripcion");
+				
+				producto = new Producto(id, nombre, precio, caducidad, descripcion);
+			}
+			
+			return producto;
+			
+			
+		} catch (SQLException e) {
+			throw new RuntimeException("Ha habido un error en la consulta", e);
+		}
+		
 	}
 
 	public Producto insertar(Producto producto) {
