@@ -1,32 +1,30 @@
 package accesodatos;
 
-import java.util.ArrayList;
-import java.util.Scanner;
-
 import entidades.Producto;
 
 public class ProductoDaoPrueba {
-	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
-		ProductoDao dao = new ProductoDao(System.getenv("JDBC_URL"), System.getenv("JDBC_USER"),
-				System.getenv("JDBC_PASS"));
-		
-		ArrayList<Producto> productos = dao.obtenerProductos();
-		
-		for(Producto producto: productos) {
-			System.out.println(producto);
-		}
-		
-		System.out.println("Dime el id del producto que quieres ver");
-		long idProducto = Long.parseLong(sc.nextLine());
-		
-		System.out.println(dao.obtenerPorId(idProducto));
-		
-		System.out.println("Dime el id del producto que quieres borrar");
-		idProducto = Long.parseLong(sc.nextLine());
-		
-		dao.borrar(idProducto);
-		
-		sc.close();
+	
+	ProductoDao dao = new ProductoDao(System.getenv("JDBC_URL"), System.getenv("JDBC_USER"),
+			System.getenv("JDBC_PASS"));
+	
+	
+	public Iterable<Producto> mostrarProductos() {
+		return dao.obtenerProductos();
+	}
+	
+	public Producto mostrarPorId(Long id) {
+		return dao.obtenerPorId(id);
+	}
+	
+	public void borrarProducto(Long id) {
+		dao.borrar(id);
+	}
+	
+	public void crearProducto(Producto producto) {
+		dao.insertar(producto);
+	}
+	
+	public void modificarProducto(Producto producto) {
+		dao.modificar(producto);
 	}
 }

@@ -14,6 +14,13 @@ public class Producto {
 	public Producto() {
 		super();
 	}
+	public Producto(String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
+		super();
+		this.nombre = nombre;
+		this.precio = precio;
+		this.caducidad = caducidad;
+		this.descripcion = descripcion;
+	}
 
 	public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
 		super();

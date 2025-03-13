@@ -29,30 +29,29 @@ public class ProductoDao {
 		this.jdbcPassword = jdbcPassword;
 	}
 
-	public ArrayList<Producto> obtenerProductos() {
-		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
-				PreparedStatement pst = con.prepareStatement(SQL_SELECT);
-				ResultSet rs = pst.executeQuery()) {
-			ArrayList<Producto> productos = new ArrayList<Producto>();
-
-			while (rs.next()) {
-				Long id = rs.getLong("id");
-				String nombre = rs.getString("nombre");
-				BigDecimal precio = rs.getBigDecimal("precio");
-				LocalDate caducidad = rs.getDate("caducidad").toLocalDate();
-				String descripcion = rs.getString("descripcion");
-
-				Producto producto = new Producto(id, nombre, precio, caducidad, descripcion);
-
+	public Iterable<Producto> obtenerProductos() {
+		try (var con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
+				var pst = con.prepareStatement(SQL_SELECT);
+				var rs = pst.executeQuery()) {
+			var productos = new ArrayList<Producto>();
+			
+			while(rs.next()) {
+				var id = rs.getLong("id");
+				var nombre = rs.getString("nombre");
+				var precio = rs.getBigDecimal("precio");
+				var caducidad = rs.getDate("caducidad").toLocalDate();
+				var descripcion = rs.getString("descripcion");
+				
+				var producto = new Producto(id, nombre, precio, caducidad, descripcion);
+				
 				productos.add(producto);
 			}
-
+			
 			return productos;
 		} catch (SQLException e) {
 			throw new RuntimeException("Ha habido un error en la consulta", e);
 		}
 	}
-
 	public Producto obtenerPorId(Long id) {
 
 		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
@@ -81,11 +80,35 @@ public class ProductoDao {
 	}
 
 	public Producto insertar(Producto producto) {
-		return null;
+		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
+				PreparedStatement pst = con.prepareStatement(SQL_INSERT);) {
+			pst.setString(1, producto.getNombre());
+			pst.setBigDecimal(2, producto.getPrecio());
+			pst.setDate(3, java.sql.Date.valueOf(producto.getCaducidad()));
+			pst.setString(4, producto.getDescripcion());
+			pst.execute();
+		} catch (SQLException e) {
+			throw new RuntimeException("Ha habido un error en la consulta", e);
+		}
+		return producto;
 	}
 
 	public Producto modificar(Producto producto) {
-		return null;
+		try(Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
+				PreparedStatement pst = con.prepareStatement(SQL_UPDATE);){
+			
+			pst.setString(1, producto.getNombre());
+			pst.setBigDecimal(2, producto.getPrecio());
+			pst.setDate(3, java.sql.Date.valueOf(producto.getCaducidad()));
+			pst.setString(4, producto.getDescripcion());
+			pst.setLong(5, producto.getId());
+			pst.execute();
+			
+		}catch (SQLException e) {
+			throw new RuntimeException("Ha habido un error en la consulta", e);
+		}
+		return obtenerPorId(producto.getId());
+		
 	}
 
 	public void borrar(Long id) {
