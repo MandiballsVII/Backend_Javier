@@ -28,20 +28,13 @@ public class OrdenesUsuario {
 			String operacion = sc.nextLine();
 			
 			switch (operacion) {
-			case "1": mostrarTodos();
-				break;
-			case "2": mostrarUno();
-				break;
-			case "3": crearUno();
-				break;
-			case "4": borrarUno();
-				break;
-			case "5": modificarUno();
-				break;
-			case "6": Salir();
-			break;
-			default: mostrarTodos();
-				break;
+			case "1" -> mostrarTodos();
+			case "2" -> mostrarUno();
+			case "3" -> crearUno();
+			case "4" -> borrarUno();
+			case "5" -> modificarUno();
+			case "6" -> Salir();
+			default -> mostrarTodos();
 			}
 		}
 		
