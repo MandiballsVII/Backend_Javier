@@ -1,20 +1,20 @@
 package accesodatos;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
+import entidades.EntidadesException;
 import entidades.Producto;
 
 public class ProductoDao {
 	private String jdbcUrl;
 	private String jdbcUsuario;
 	private String jdbcPassword;
+	private static String jdbcDriver = System.getenv("JDBC_DRIVER");
 
 	private static final String SQL_SELECT = "SELECT id, nombre, precio, caducidad, descripcion FROM productos";
 	private static final String SQL_SELECT_ID = SQL_SELECT + " WHERE id=?";
@@ -28,6 +28,14 @@ public class ProductoDao {
 		this.jdbcUsuario = jdbcUsuario;
 		this.jdbcPassword = jdbcPassword;
 	}
+	
+	static {
+		try {
+			Class.forName(jdbcDriver);
+		} catch (ClassNotFoundException e) {
+			throw new EntidadesException("No se ha encontrado el driver de MySQL");
+		}
+	}
 
 	public Iterable<Producto> obtenerProductos() {
 		try (var con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
@@ -36,20 +44,15 @@ public class ProductoDao {
 			var productos = new ArrayList<Producto>();
 			
 			while(rs.next()) {
-				var id = rs.getLong("id");
-				var nombre = rs.getString("nombre");
-				var precio = rs.getBigDecimal("precio");
-				var caducidad = rs.getDate("caducidad").toLocalDate();
-				var descripcion = rs.getString("descripcion");
-				
-				var producto = new Producto(id, nombre, precio, caducidad, descripcion);
+				var producto = filaAProducto(rs);
 				
 				productos.add(producto);
 			}
 			
 			return productos;
 		} catch (SQLException e) {
-			throw new RuntimeException("Ha habido un error en la consulta", e);
+			throw new EntidadesException("Ha habido un error en la consulta de todos los productos", e);
+			// NOSONAR
 		}
 	}
 	public Producto obtenerPorId(Long id) {
@@ -60,21 +63,17 @@ public class ProductoDao {
 			pst.setLong(1, id);
 			ResultSet rs = pst.executeQuery();
 
-			Producto producto = new Producto();
+			Producto producto = null;
 
 			while (rs.next()) {
-				String nombre = rs.getString("nombre");
-				BigDecimal precio = rs.getBigDecimal("precio");
-				LocalDate caducidad = rs.getDate("caducidad").toLocalDate();
-				String descripcion = rs.getString("descripcion");
-
-				producto = new Producto(id, nombre, precio, caducidad, descripcion);
+				
+				producto = filaAProducto(rs);
 			}
 
 			return producto;
 
 		} catch (SQLException e) {
-			throw new RuntimeException("Ha habido un error en la consulta", e);
+			throw new EntidadesException("Ha habido un error en la consulta de producto con id" + id, e);
 		}
 
 	}
@@ -82,13 +81,12 @@ public class ProductoDao {
 	public Producto insertar(Producto producto) {
 		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
 				PreparedStatement pst = con.prepareStatement(SQL_INSERT);) {
-			pst.setString(1, producto.getNombre());
-			pst.setBigDecimal(2, producto.getPrecio());
-			pst.setDate(3, java.sql.Date.valueOf(producto.getCaducidad()));
-			pst.setString(4, producto.getDescripcion());
+			
+			productoAFila(producto, pst);
 			pst.execute();
+			
 		} catch (SQLException e) {
-			throw new RuntimeException("Ha habido un error en la consulta", e);
+			throw new EntidadesException("Ha habido un error en la insercion del producto con id " + producto.getId(), e);
 		}
 		return producto;
 	}
@@ -97,27 +95,44 @@ public class ProductoDao {
 		try(Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
 				PreparedStatement pst = con.prepareStatement(SQL_UPDATE);){
 			
-			pst.setString(1, producto.getNombre());
-			pst.setBigDecimal(2, producto.getPrecio());
-			pst.setDate(3, java.sql.Date.valueOf(producto.getCaducidad()));
-			pst.setString(4, producto.getDescripcion());
-			pst.setLong(5, producto.getId());
+			productoAFila(producto, pst);
 			pst.execute();
 			
+			return producto;
+			
 		}catch (SQLException e) {
-			throw new RuntimeException("Ha habido un error en la consulta", e);
+			throw new EntidadesException("Ha habido un error en la modificacion del producto con id " + producto.getId(), e);
 		}
-		return obtenerPorId(producto.getId());
 		
 	}
-
 	public void borrar(Long id) {
 		try (Connection con = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcPassword);
 				PreparedStatement pst = con.prepareStatement(SQL_DELETE);) {
 			pst.setLong(1, id);
 			pst.execute();
 		} catch (SQLException e) {
-			throw new RuntimeException("Ha habido un error en la consulta", e);
+			throw new EntidadesException("Ha habido un error en el borrado en el producto con id " + id, e);
+		}
+	}
+	
+	private Producto filaAProducto(ResultSet rs) throws SQLException {
+		var id = rs.getLong("id");
+		var nombre = rs.getString("nombre");
+		var precio = rs.getBigDecimal("precio");
+		var caducidadDate = rs.getDate("caducidad");
+		var caducidad = caducidadDate == null ? null : caducidadDate.toLocalDate();
+		var descripcion = rs.getString("descripcion");
+		
+		return new Producto(id, nombre, precio, caducidad, descripcion);
+	}
+	private void productoAFila(Producto producto, PreparedStatement pst) throws SQLException {
+		pst.setString(1, producto.getNombre());
+		pst.setBigDecimal(2, producto.getPrecio());
+		pst.setDate(3, producto.getCaducidad() == null ? null : java.sql.Date.valueOf(producto.getCaducidad()));
+		pst.setString(4, producto.getDescripcion());
+		
+		if(producto.getId() != null) {
+			pst.setLong(5, producto.getId());
 		}
 	}
 }

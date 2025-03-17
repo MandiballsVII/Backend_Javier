@@ -33,7 +33,7 @@ public class OrdenesUsuario {
 			case "3" -> crearUno();
 			case "4" -> borrarUno();
 			case "5" -> modificarUno();
-			case "6" -> Salir();
+			case "6" -> salir();
 			default -> mostrarTodos();
 			}
 		}
@@ -41,7 +41,7 @@ public class OrdenesUsuario {
 		sc.close();
 	}
 
-	private static void Salir() {
+	private static void salir() {
 		salir = true;
 		
 	}
