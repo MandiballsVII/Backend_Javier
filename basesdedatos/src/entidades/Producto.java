@@ -5,95 +5,163 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class Producto {
-	private Long id;
-	private String nombre;
-	private BigDecimal precio;
-	private LocalDate caducidad;
-	private String descripcion;
+	// CONSTANTES
+		private static final String NOMBRE_POR_DEFECTO = "NO TIENE NOMBRE";
+		private static final BigDecimal PRECIO_POR_DEFECTO = BigDecimal.ZERO;
+		
+		// VARIABLES ESTÁTICAS / "DE CLASE" / "COMPARTIDAS"
+		private static int maximoNombre;
 
-	public Producto() {
-		super();
-	}
-	public Producto(String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
-		super();
-		this.nombre = nombre;
-		this.precio = precio;
-		this.caducidad = caducidad;
-		this.descripcion = descripcion;
-	}
+		// BLOQUE ESTÁTICO / "CONSTRUCTOR ESTÁTICO" / "CONSTRUCTOR DE CLASE"
+		static {
+			maximoNombre = 45;
+		}
 
-	public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
-		super();
-		this.id = id;
-		this.nombre = nombre;
-		this.precio = precio;
-		this.caducidad = caducidad;
-		this.descripcion = descripcion;
-	}
+		// VARIABLES DE INSTANCIA / ATRIBUTOS / CAMPOS / FIELDS
+		private Long id;
+		private String nombre;
+		private BigDecimal precio;
+		private LocalDate caducidad;
+		private String descripcion;
 
-	public Long getId() {
-		return id;
-	}
+		private Categoria categoria;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+		// CONSTRUCTORES
+		public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion,
+				Categoria categoria) {
+			setId(id);
+			setNombre(nombre);
+			setPrecio(precio);
+			setCaducidad(caducidad);
+			setDescripcion(descripcion);
+			setCategoria(categoria);
+		}
 
-	public String getNombre() {
-		return nombre;
-	}
+		public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
+			this(id, nombre, precio, caducidad, descripcion, null);
+		}
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
+		public Producto(String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
+			this(null, nombre, precio, caducidad, descripcion, null);
+		}
 
-	public BigDecimal getPrecio() {
-		return precio;
-	}
+		public Producto(String nombre, BigDecimal precio, LocalDate caducidad) {
+			this(null, nombre, precio, caducidad, null, null);
+		}
 
-	public void setPrecio(BigDecimal precio) {
-		this.precio = precio;
-	}
+		public Producto(String nombre, BigDecimal precio) {
+			this(null, nombre, precio, null, null, null);
+		}
 
-	public LocalDate getCaducidad() {
-		return caducidad;
-	}
+		public Producto() {
+			this(null, NOMBRE_POR_DEFECTO, PRECIO_POR_DEFECTO, null, null, null);
+		}
 
-	public void setCaducidad(LocalDate caducidad) {
-		this.caducidad = caducidad;
-	}
+		// GETTERS Y SETTERS / PROPIEDADES
+		public Long getId() {
+			return id;
+		}
 
-	public String getDescripcion() {
-		return descripcion;
-	}
+		public void setId(Long id) {
+			if (id != null && id < 0) {
+				throw new EntidadesException("No se admiten valores negativos");
+			}
 
-	public void setDescripcion(String descripcion) {
-		this.descripcion = descripcion;
-	}
+			this.id = id;
+		}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(caducidad, descripcion, id, nombre, precio);
-	}
+		public String getNombre() {
+			return nombre;
+		}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Producto other = (Producto) obj;
-		return Objects.equals(caducidad, other.caducidad) && Objects.equals(descripcion, other.descripcion)
-				&& Objects.equals(id, other.id) && Objects.equals(nombre, other.nombre)
-				&& Objects.equals(precio, other.precio);
-	}
+		public void setNombre(String nombre) {
+			if (nombre == null || nombre.length() > maximoNombre) {
+				throw new EntidadesException("No se admiten valores superiores a " + maximoNombre + " caracteres ni nulos");
+			}
 
-	@Override
-	public String toString() {
-		return "Producto [id=" + id + ", nombre=" + nombre + ", precio=" + precio + ", caducidad=" + caducidad
-				+ ", descripcion=" + descripcion + "]";
-	}
+			this.nombre = nombre;
+		}
+
+		public BigDecimal getPrecio() {
+			return precio;
+		}
+
+		public void setPrecio(BigDecimal precio) {
+			if (precio == null) {
+				throw new EntidadesException("No se admiten precios nulos");
+			}
+
+			this.precio = precio;
+		}
+
+		public LocalDate getCaducidad() {
+			return caducidad;
+		}
+
+		public void setCaducidad(LocalDate caducidad) {
+			if (caducidad != null && caducidad.isBefore(LocalDate.now())) {
+				throw new EntidadesException("No se pueden crear productos caducados");
+			}
+
+			this.caducidad = caducidad;
+		}
+
+		public String getDescripcion() {
+			return descripcion;
+		}
+
+		public void setDescripcion(String descripcion) {
+			this.descripcion = descripcion;
+		}
+
+		public static int getMaximoNombre() {
+			return maximoNombre;
+		}
+
+		public static void setMaximoNombre(int maximoNombre) {
+			Producto.maximoNombre = maximoNombre;
+		}
+
+		public Categoria getCategoria() {
+			return categoria;
+		}
+
+		public void setCategoria(Categoria categoria) {
+			this.categoria = categoria;
+		}
+
+		// MÉTODOS DE INSTANCIA
+		public boolean isCaducado() {
+			if (caducidad == null) {
+				throw new EntidadesException("No hay caducidad");
+			}
+
+			return caducidad.isBefore(LocalDate.now());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(caducidad, categoria, descripcion, id, nombre, precio);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Producto other = (Producto) obj;
+			return Objects.equals(caducidad, other.caducidad) && Objects.equals(categoria, other.categoria)
+					&& Objects.equals(descripcion, other.descripcion) && Objects.equals(id, other.id)
+					&& Objects.equals(nombre, other.nombre) && Objects.equals(precio, other.precio);
+		}
+
+		@Override
+		public String toString() {
+			return "Producto [id=" + id + ", nombre=" + nombre + ", precio=" + precio + ", caducidad=" + caducidad
+					+ ", descripcion=" + descripcion + ", categoria=" + categoria + "]";
+		}
 
 }
