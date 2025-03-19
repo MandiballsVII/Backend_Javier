@@ -36,6 +36,14 @@ public class Producto {
 			setDescripcion(descripcion);
 			setCategoria(categoria);
 		}
+		public Producto(String nombre, BigDecimal precio, LocalDate caducidad, String descripcion,
+				Categoria categoria) {
+			setNombre(nombre);
+			setPrecio(precio);
+			setCaducidad(caducidad);
+			setDescripcion(descripcion);
+			setCategoria(categoria);
+		}
 
 		public Producto(Long id, String nombre, BigDecimal precio, LocalDate caducidad, String descripcion) {
 			this(id, nombre, precio, caducidad, descripcion, null);

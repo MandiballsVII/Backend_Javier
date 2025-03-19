@@ -21,10 +21,15 @@ public class OrdenesUsuario {
 					¿Sobre qué datos quieres trabajar?
 					1-. Productos
 					2-. Categorías
+					3-. Salir
 					""");
 
 			String tabla = sc.nextLine();
-
+			
+			if(tabla.equals("3")){
+				salir();
+				break;
+			}
 			System.out.println("""
 					¿Qué operación quieres realizar?
 					1-. Ver todos los registros
@@ -32,7 +37,6 @@ public class OrdenesUsuario {
 					3-. Crear un registro
 					4-. Borrar un registro
 					5-. Modificar un registro
-					6-. Salir
 					""");
 
 			String operacion = sc.nextLine();
@@ -43,7 +47,6 @@ public class OrdenesUsuario {
 			case "3" -> crearUno(tabla);
 			case "4" -> borrarUno(tabla);
 			case "5" -> modificarUno(tabla);
-			case "6" -> salir();
 			default -> mostrarTodos(tabla);
 			}
 		}
@@ -110,8 +113,25 @@ public class OrdenesUsuario {
 			LocalDate caducidad = LocalDate.parse(sc.nextLine());
 			System.out.println("Dime la descripción del producto que quieres crear");
 			String descripcion = sc.nextLine();
+			System.out.println("Dime la categoría del producto que quieres crear");
+			
+			var categorias = cDaoPrueba.mostrarCategorias();
+			
+			for(Categoria categoria : categorias) {
+				System.out.println(categoria.getId() + "-. " + categoria.getNombre());
+			}
+			
+			String categoriaId = sc.nextLine();
+			Categoria categoriaParaCrear = new Categoria();
+			
+			for(Categoria cat : categorias) {
+				if(Long.parseLong(categoriaId) == cat.getId()) {
+					categoriaParaCrear = cat;
+					
+				}
+			}
 
-			Producto producto = new Producto(nombre, precio, caducidad, descripcion);
+			Producto producto = new Producto(nombre, precio, caducidad, descripcion, categoriaParaCrear);
 			pDaoPrueba.crearProducto(producto);
 		}
 		else if(tabla.equals("2")) {
@@ -137,16 +157,34 @@ public class OrdenesUsuario {
 			LocalDate caducidad = LocalDate.parse(sc.nextLine());
 			System.out.println("Dime la descripción del producto que quieres modificar");
 			String descripcion = sc.nextLine();
+			
+			System.out.println("Dime la categoría del producto que quieres crear");
+			
+			var categorias = cDaoPrueba.mostrarCategorias();
+			
+			for(Categoria categoria : categorias) {
+				System.out.println(categoria.getId() + "-. " + categoria.getNombre());
+			}
+			
+			String categoriaId = sc.nextLine();
+			Categoria categoriaParaCrear = new Categoria();
+			
+			for(Categoria cat : categorias) {
+				if(Long.parseLong(categoriaId) == cat.getId()) {
+					categoriaParaCrear = cat;
+					
+				}
+			}
 
-			Producto producto = new Producto(id, nombre, precio, caducidad, descripcion);
+			Producto producto = new Producto(id, nombre, precio, caducidad, descripcion, categoriaParaCrear);
 			pDaoPrueba.modificarProducto(producto);
 		}
 		else if(tabla.equals("2")) {
-			System.out.println("Dime el id de la categoria que quieres modificar");
+			System.out.println("Dime el id de la categoría que quieres modificar");
 			Long id = Long.parseLong(sc.nextLine());
 			System.out.println("Dime el nombre de la categoría que quieres modificar");
 			String nombre = sc.nextLine();
-			System.out.println("Dime la descripción de la categroía que quieres modificar");
+			System.out.println("Dime la descripción de la categoría que quieres modificar");
 			String descripcion = sc.nextLine();
 			
 			Categoria categoria = new Categoria(id, nombre, descripcion);
