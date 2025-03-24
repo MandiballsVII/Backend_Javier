@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -120,6 +121,11 @@ public class ProductoDao {
 	}
 
 	private Producto filaAProducto(ResultSet rs) throws SQLException {
+		
+		// PARA OBTENER LOS DATOS DE LA RESPUESTA DE SQL
+		ResultSetMetaData rsmd = rs.getMetaData();
+		//System.out.println(rsmd.getColumnClassName(7));
+		//////////////************//////////////////
 		var id = rs.getLong("p.id");
 		var nombre = rs.getString("p.nombre");
 		var precio = rs.getBigDecimal("p.precio");
